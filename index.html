@@ -488,7 +488,7 @@ dialog .row-btns{display:flex;gap:8px;justify-content:flex-end}
 </dialog>
 
 <script>
-const API = location.port === "8000" ? "" : "http://127.0.0.1:8000";
+const API = location.port === "5500" ? "http://127.0.0.1:8000" : "";
 const PALETTE = ["var(--gfs)", "var(--ifs)", "var(--ai)", "var(--orange)", "var(--green)"];
 let MODELS = [], COL = {};
 const DEFAULTS = {
