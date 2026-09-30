@@ -964,7 +964,6 @@ function render() {
   const rainTxt = day.rain ? (["none", "light"].includes(day.rain.word) ? t("noRainAmt") : t("rainAmt", { mm: day.rain.mm })) : "";
   const place = d.skill_from || P.place.name;
   main.innerHTML = `
-    ${d.sample ? `<div class="banner">${esc(t("sampleBanner"))}</div>` : ""}
     <section class="today ${day.level}" aria-label="${esc(dayLabel(day))}">
       <div class="day">${esc(dayLabel(day))}, ${esc(dateText(day))}</div>
       <h2>${esc(headline(day))}</h2>
@@ -1001,8 +1000,8 @@ async function load(sample = false) {
     P.data = await res.json(); P.sel = 0; render();
   } catch (e) {
     $("pubMain").innerHTML = `<div class="state"><p>${esc(t("error"))}</p><div class="row-btns">
-      <button class="btn brand" id="retry">${esc(t("retry"))}</button><button class="btn ghost" id="showSample">${esc(t("sample"))}</button></div></div>`;
-    $("retry").onclick = () => load(); $("showSample").onclick = () => load(true);
+      <button class="btn brand" id="retry">${esc(t("retry"))}</button></div></div>`;
+    $("retry").onclick = () => load();
   }
 }
 
