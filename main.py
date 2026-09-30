@@ -27,7 +27,7 @@ fetcher = datasource.http_fetch  # swapped for a fake in tests
 app = FastAPI(title="MAUSAM-X Adaptive Forecast API", version="0.5.0")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1:5500", "http://localhost:5500"],
+    allow_origins=["*"],
     allow_credentials=False,
     allow_methods=["GET", "POST"],
     allow_headers=["Content-Type", "X-Admin-Key"],
@@ -204,13 +204,19 @@ def outlook(d: OutlookInput):
     def run():
         city, km = datasource.nearest_city(d.lat, d.lon)
         ctx = city if km <= 150 else f"{d.lat:.1f},{d.lon:.1f}"
-        if d.sample:
+        
+        try:
+            if d.sample:
+                raise datasource.DataSourceError("Force sample")
+            days = datasource.fetch_outlook(d.lat, d.lon, fetcher)
+            is_sample = False
+        except datasource.DataSourceError:
             ctx = "Sample"
             today = dt.date.today()
             days = [{"date": (today + dt.timedelta(days=i + 1)).isoformat(), "lead_days": i + 1, **s}
                     for i, s in enumerate(SAMPLE_DAYS)]
-        else:
-            days = datasource.fetch_outlook(d.lat, d.lon, fetcher)
+            is_sample = True
+
         out = []
         for day in days:
             rain = heat = None
@@ -220,7 +226,7 @@ def outlook(d: OutlookInput):
                 heat = engine.blend(ctx, "Heatwave", day["heat"], "alert", day["lead_days"], None)
             out.append({"date": day["date"], "lead_days": day["lead_days"], **public.summarize(rain, heat)})
         return {"days": out, "skill_from": ctx if ctx != f"{d.lat:.1f},{d.lon:.1f}" else None,
-                "sample": d.sample, "attribution": datasource.ATTRIBUTION}
+                "sample": is_sample, "attribution": datasource.ATTRIBUTION}
     return guarded(run)
 
 
